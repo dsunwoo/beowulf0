@@ -1,0 +1,8 @@
+---
+- hosts: master nodes
+  remote_user: cluster
+
+  tasks:
+  - name: install mpi
+    apt: name=mpich2 state=latest
+
