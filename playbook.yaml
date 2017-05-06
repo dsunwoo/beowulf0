@@ -1,6 +1,15 @@
 ---
-- hosts: master nodes
+- hosts: master
   remote_user: cluster
+  become: yes
+
+  tasks:
+  - name: install mpi
+    apt: name=mpich state=latest
+
+- hosts: nodes
+  remote_user: cluster
+  become: yes
 
   tasks:
   - name: install mpi
