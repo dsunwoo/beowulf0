@@ -1,8 +1,62 @@
 ---
-- hosts: master nodes
+- hosts: master
   remote_user: cluster
+  become: yes
 
   tasks:
   - name: install mpi
+    apt: name=mpich state=latest
+
+  - name: install nfs server
+    apt: name=nfs-kernel-server state=latest
+
+  - name: config nfs share
+    lineinfile:
+      dest: /etc/exports
+      line: '/home/cluster/work *(rw,sync,no_subtree_check)'
+
+- hosts: nodes
+  remote_user: cluster
+  become: yes
+
+  tasks:
+  - name: install mpi on older ubuntu
     apt: name=mpich2 state=latest
+    when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '14.04'
+
+  - name: install mpi on newer ubuntu
+    apt: name=mpich state=latest
+    when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
+
+  - name: install nfs client
+    apt: name=nfs-common state=latest
+
+  - name: mount master /home/cluster
+    mount:
+      name: /home/cluster/work
+      src: master:/home/cluster/work
+      fstype: nfs
+      state: mounted
+
+- hosts: master nodes
+  remote_user: cluster
+  become: yes
+
+  tasks:
+  - name: config hostnames
+    lineinfile:
+      dest: /etc/hosts
+      line: '192.168.2.10 master'
+
+  - lineinfile:
+      dest: /etc/hosts
+      line: '192.168.2.11 node1'
+
+  - lineinfile:
+      dest: /etc/hosts
+      line: '192.168.2.12 node2'
+
+  - lineinfile:
+      dest: /etc/hosts
+      line: '192.168.2.13 node3'
 
