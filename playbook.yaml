@@ -13,7 +13,7 @@
   - name: config nfs share
     lineinfile:
       dest: /etc/exports
-      line: '/home/cluster *(rw,sync,no_subtree_check)'
+      line: '/home/cluster/work *(rw,sync,no_subtree_check)'
 
 - hosts: nodes
   remote_user: cluster
@@ -32,9 +32,11 @@
     apt: name=nfs-common state=latest
 
   - name: mount master /home/cluster
-    lineinfile:
-      dest: /etc/fstab
-      line: 'master:/home/cluster /home/cluster nfs'
+    mount:
+      name: /home/cluster/work
+      src: master:/home/cluster/work
+      fstype: nfs
+      state: mounted
 
 - hosts: master nodes
   remote_user: cluster
